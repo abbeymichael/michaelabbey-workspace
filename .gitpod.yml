@@ -1,22 +1,57 @@
-tasks:
-  - name: Start MySQL + phpMyAdmin
-    init: |
-      cd infrastructure/mysql
-      docker-compose up -d
-    command: |
-      echo "✅ MySQL and phpMyAdmin are starting..."
-      echo "🔗 phpMyAdmin URL: $(gp url 8080)"
-      echo "🗄️  MySQL is running on port 3306"
+# Gitpod configuration with auto-starting MySQL stack
+image: gitpod/workspace-full:latest
 
+# Port configurations
 ports:
+  - port: 8080
+    onOpen: notify
+    description: "phpMyAdmin"
   - port: 3306
     onOpen: ignore
-    description: MySQL Server
+    description: "MySQL Database"
 
-  - port: 8082
-    onOpen: open-preview
-    description: phpMyAdmin Web UI
-
-vscode:
-  extensions:
-    - formulahendry.vscode-mysql
+# Startup tasks
+tasks:
+  - name: Start MySQL Stack
+    command: |
+      cd /workspace/michaelabbey-workspace/mysql-stack
+      
+      # Check if docker-compose.yml exists
+      if [ ! -f docker-compose.yml ]; then
+        echo "❌ docker-compose.yml not found in mysql-stack directory!"
+        echo "Please run the setup commands first."
+        exit 1
+      fi
+      
+      # Start the MySQL stack
+      echo "🚀 Starting MySQL + phpMyAdmin Docker Stack..."
+      docker-compose up -d
+      
+      # Wait for MySQL to be ready
+      echo "⏳ Waiting for MySQL to be ready..."
+      for i in {1..30}; do
+        if docker exec workspace-mysql mysqladmin ping -h localhost --silent 2>/dev/null; then
+          echo "✅ MySQL is ready!"
+          break
+        fi
+        echo "Still waiting... ($i/30)"
+        sleep 2
+      done
+      
+      echo ""
+      echo "🎉 MYSQL STACK IS READY!"
+      echo "📊 phpMyAdmin: $(gp url 8080)"
+      echo "🔐 MySQL Connection:"
+      echo "   Host: localhost"
+      echo "   Port: 3306"
+      echo "   Username: root"
+      echo "   Password: password123"
+      echo ""
+      echo "💾 Data Location: /workspace/michaelabbey-workspace/mysql-stack/mysql-data"
+      echo ""
+      echo "⚡ Management Commands:"
+      echo "   cd /workspace/michaelabbey-workspace/mysql-stack"
+      echo "   docker-compose logs -f    # View logs"
+      echo "   docker-compose down       # Stop stack"
+      echo "   docker-compose restart    # Restart stack"
+      echo "   docker-compose up -d      # Start stack"
