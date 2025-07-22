@@ -1,0 +1,26 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - name: Setup phpMyAdmin and MySQL
+    init: |
+      # Start MySQL
+      sudo service mysql start
+
+      # Set up MySQL user and grant privileges
+      sudo mysql -e "CREATE USER 'root'@'localhost' IDENTIFIED BY 'mike123';"
+      sudo mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'user'@'localhost';"
+      sudo mysql -e "FLUSH PRIVILEGES;"
+
+      # Download and extract phpMyAdmin
+      curl -L https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.zip -o phpmyadmin.zip
+      unzip phpmyadmin.zip
+      mv phpMyAdmin-*-all-languages phpmyadmin
+      rm phpmyadmin.zip
+    command: |
+      # Start PHP server for phpMyAdmin on port 8080
+      php -S 0.0.0.0:8080 -t phpmyadmin
+
+ports:
+  - port: 8080
+    onOpen: open-preview
