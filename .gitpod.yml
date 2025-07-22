@@ -1,21 +1,21 @@
 tasks:
-  - name: Start Docker Containers
+  - name: Start MySQL + phpMyAdmin
     init: |
+      cd infrastructure/mysql
       docker-compose up -d
-
     command: |
-      echo "✅ Services started"
-      echo "🔗 phpMyAdmin: $(gp url 80)"
-      echo "🗄️  Databases: project1_db, project2_db, project3_db"
-      echo "🔐 MySQL User: dev / devpass123"
+      echo "✅ MySQL and phpMyAdmin are starting..."
+      echo "🔗 phpMyAdmin URL: $(gp url 8080)"
+      echo "🗄️  MySQL is running on port 3306"
 
 ports:
   - port: 3306
     onOpen: ignore
-    description: MySQL Database
-  - port: 80
+    description: MySQL Server
+
+  - port: 8082
     onOpen: open-preview
-    description: phpMyAdmin Interface
+    description: phpMyAdmin Web UI
 
 vscode:
   extensions:
